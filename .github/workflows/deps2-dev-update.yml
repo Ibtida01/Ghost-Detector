@@ -19,10 +19,16 @@ jobs:
         run: |
           VERSION=$(cat version.txt)
           echo "Version found: $VERSION"
-          echo "::set-output name=version::$VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV  # Set environment variable
 
       - name: Notify deps2.dev of new version
         run: |
-          curl -X POST https://your-deps2.dev/newVersion \
+          response=$(curl -s -o /dev/null -w "%{http_code}" -X POST https://your-deps2.dev/newVersion \
           -H "Content-Type: application/json" \
-          -d "{\"package\": \"VeriTax\", \"version\": \"${{ steps.read_version.outputs.version }}\"}"
+          -d "{\"package\": \"VeriTax\", \"version\": \"${{ env.VERSION }}\"}")
+          
+          if [ "$response" -ne 200 ]; then
+            echo "Failed to notify deps2.dev: HTTP status $response"
+            exit 1
+          fi
+          echo "Successfully notified deps2.dev of new version."
