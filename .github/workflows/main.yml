@@ -3,7 +3,7 @@ name: Notify deps2.dev of new version
 on:
   push:
     branches:
-      - main
+      - update-workflows
     paths:
       - version.txt
 
